@@ -1,0 +1,42 @@
+version: '2'
+services:
+  store:
+    # data-only container
+    image: postgres:latest # reuse postgres container
+    volumes:
+      - /var/lib/postgresql/data
+    command: "true"
+  db:
+    image: postgres
+    ports:
+      - 5432:5432
+    volumes_from:
+      - store # connect postgres and the data-only container
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=rails_docker_database
+  web:
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/app
+    # This tells the web container to mount the `bundle` images'
+    # /bundle volume to the `web` containers /bundle path.
+    volumes_from:
+      - bundle
+    links:
+      - db
+    command: ./bin/start.sh
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=rails_docker_database
+      - DB_USER=postgres
+      - DB_PSWD=postgres
+  bundle:
+    image: busybox
+    volumes:
+      - /bundle
