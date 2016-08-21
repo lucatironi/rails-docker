@@ -91,7 +91,7 @@ gem 'rails', '~> 5'
 
 First we need to bundle the rails 5 dependencies:
 ```
-$ docker-compose run web bundle
+$ docker-compose run web bundle --jobs=10 --retry=5
 ```
 
 And then use the `rails new` command to create the new application:
