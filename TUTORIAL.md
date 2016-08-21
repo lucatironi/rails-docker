@@ -21,6 +21,7 @@ $ touch Dockerfile docker-compose.yml Gemfile Gemfile.lock
 Copy and paste the following content in the respective files:
 
 File: `Dockerfile`
+
 ```
 FROM ruby:2.3.1
 
@@ -35,6 +36,7 @@ ADD . $APP_ROOT
 ```
 
 File: `docker-compose.yml`
+
 ```
 version: '2'
 services:
@@ -81,6 +83,7 @@ services:
 ```
 
 File: `Gemfile`
+
 ```
 source 'https://rubygems.org'
 
@@ -90,11 +93,13 @@ gem 'rails', '~> 5'
 ## Build the project
 
 First we need to bundle the rails 5 dependencies:
+
 ```
 $ docker-compose run web bundle --jobs=10 --retry=5
 ```
 
 And then use the `rails new` command to create the new application:
+
 ```
 $ docker-compose run web bundle exec rails new . --force --database=postgresql --skip-bundle
 ```
@@ -105,6 +110,7 @@ We need to change slightly the database configuration to use the environment
 variables set in the docker-compose file:
 
 File: `config/database.yml`
+
 ```
 default: &default
   adapter: postgresql
@@ -134,6 +140,7 @@ $ docker-compose run web bin/setup
 Create a `start.sh` file in the `bin` dir:
 
 File: `bin/start.sh`
+
 ```
 #!/bin/bash
 
@@ -149,11 +156,13 @@ bundle exec rails s -p $PORT -b 0.0.0.0
 It automatically removes the `server.pid` that will create problems when you stop
 and restart the app.
 Make the file executable with the `chmod` command:
+
 ```
 $ chmod +x bin/start.sh
 ```
 
 Finally start your newly created Rails application and visit [http://localhost:3000]:
+
 ```
 $ docker-compose up
 ```
