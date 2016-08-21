@@ -161,7 +161,7 @@ Make the file executable with the `chmod` command:
 $ chmod +x bin/start.sh
 ```
 
-Finally start your newly created Rails application and visit [http://localhost:3000]:
+Finally start your newly created Rails application and visit [localhost:3000](http://localhost:3000):
 
 ```
 $ docker-compose up
