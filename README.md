@@ -38,48 +38,47 @@ ADD . $APP_ROOT
 File: `docker-compose.yml`
 
 ```
-version: '2'
-services:
+version: '3'
+
+volumes:
   store:
-    # data-only container
-    image: postgres:latest # reuse postgres container
-    volumes:
-      - /var/lib/postgresql/data
-    command: "true"
-  db:
-    image: postgres
-    ports:
-      - 5432:5432
-    volumes_from:
-      - store # connect postgres and the data-only container
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=rails_docker_database
+    driver: local
+  bundle:
+    driver: local
+
+services:
   web:
     build: .
     ports:
       - 3000:3000
     volumes:
       - .:/app
-    # This tells the web container to mount the `bundle` images'
-    # /bundle volume to the `web` containers /bundle path.
-    volumes_from:
-      - bundle
+      - bundle:/usr/local/bundle
     links:
       - db
+    # Keep the stdin open, so we can attach to our app container's process and do things such as
+    # byebug, etc:
+    stdin_open: true
+    # Enable sending signals (CTRL+C, CTRL+P + CTRL+Q) into the container:
+    tty: true
     command: ./bin/start.sh
-    environment:
-      - PORT=3000
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=rails_docker_database
-      - DB_USER=postgres
-      - DB_PSWD=postgres
-  bundle:
-    image: busybox
+    environment: &app_env
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PSWD: postgres
+      DB_NAME: development_database
+  db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
     volumes:
-      - /bundle
+      - store:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: development_database
 ```
 
 File: `Gemfile`
@@ -95,13 +94,13 @@ gem 'rails', '~> 5'
 First we need to bundle the rails 5 dependencies:
 
 ```
-$ docker-compose run web bundle --jobs=10 --retry=5
+$ docker-compose run --rm web bundle --jobs=10 --retry=5
 ```
 
 And then use the `rails new` command to create the new application:
 
 ```
-$ docker-compose run web bundle exec rails new . --force --database=postgresql --skip-bundle
+$ docker-compose run --rm web bundle exec rails new . --force --database=postgresql --skip-bundle
 ```
 
 ## Configure the database
@@ -128,13 +127,13 @@ development:
 
 test:
   <<: *default
-  database: app_test
+  database: test_database
 ```
 
 ## Setup the app
 
 ```
-$ docker-compose run web bin/setup
+$ docker-compose run --rm web bin/setup
 ```
 
 Create a `start.sh` file in the `bin` dir:
