@@ -23,10 +23,10 @@ Copy and paste the following content in the respective files:
 File: `Dockerfile`
 
 ```
-FROM ruby:2.3.1
+FROM ruby:2.4.2
 
 ENV APP_ROOT /app
-ENV BUNDLE_PATH /bundle
+ENV BUNDLE_PATH /usr/local/bundle
 
 RUN apt-get update -qq && \
     apt-get install -y build-essential libpq-dev nodejs
